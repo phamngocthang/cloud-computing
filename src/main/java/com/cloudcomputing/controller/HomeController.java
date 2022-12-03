@@ -3,7 +3,6 @@ package com.cloudcomputing.controller;
 import com.cloudcomputing.entity.Subject;
 import com.cloudcomputing.service.SubjectService;
 import com.cloudcomputing.service.UserService;
-import com.cloudcomputing.util.WebUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.Authentication;
@@ -23,10 +22,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,179 +36,140 @@ public class HomeController {
     private final SubjectService subjectService;
     private final UserService userService;
 
-
     @GetMapping("/")
     public String homePage(Model model, Principal principal, HttpServletRequest request, HttpServletResponse response) {
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (Optional.ofNullable(authentication).isPresent()) {
             persistentTokenBasedRememberMeServices.loginSuccess(request, response, authentication);
         }
         String username = principal.getName();
         com.cloudcomputing.entity.User user = userService.getUserByUsername(username);
-        List<Subject> listSubjects = subjectService.getSubjects();
+        List<Subject> subjects = subjectService.getSubjects();
         model.addAttribute("name", user.getFullName());
-        model.addAttribute("listSubjects", listSubjects);
+        model.addAttribute("subjects", subjects);
         return "index";
     }
 
-    @GetMapping("/registersubjects")
+    @GetMapping("/register-subject")
     public String registerSubject(Model model, @Param("keyword") String keyword, Principal principal, HttpServletRequest request, HttpServletResponse response) {
-
-        User authUser = (User) ((Authentication) principal).getPrincipal();
-
-        if (Optional.ofNullable(authUser).isEmpty()) {
+        User authenticatedUser = (User) ((Authentication) principal).getPrincipal();
+        if (Optional.ofNullable(authenticatedUser).isEmpty()) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (Optional.ofNullable(auth).isPresent()) {
                 persistentTokenBasedRememberMeServices.loginSuccess(request, response, auth);
-                authUser = (User) auth.getPrincipal();
+                authenticatedUser = (User) auth.getPrincipal();
             }
         }
-
-        String username = WebUtil.toStringUser(Objects.requireNonNull(authUser));
-        com.cloudcomputing.entity.User userupdate = userService.getUserByUsername(username);
-        Set<Subject> subjects = userupdate.getSubjects();
-        String name = principal.getName();
-        List<Subject> list = new ArrayList<>();
-        com.cloudcomputing.entity.User user = userService.getUserByUsername(name);
+        assert authenticatedUser != null;
+        String username = authenticatedUser.getUsername();
+        com.cloudcomputing.entity.User userUpdate = userService.getUserByUsername(username);
+        List<Subject> subjects;
         if (Optional.ofNullable(keyword).isPresent()) {
-            List<Subject> subjects = subjectService.getSubjectsByContainKeyword(keyword);
-            for (Subjects s : subjects) {
-                if (!subjects.contains(s)) {
-                    list.add(s);
-                }
-            }
-
+            subjects = subjectService.getSubjectsByContainKeyword(keyword)
+                    .stream().filter(s -> !userUpdate.getSubjects().contains(s))
+                    .collect(Collectors.toList());
         } else {
-            subjects = subjectService.getAll();
-            for (Subjects s : subjects) {
-                if (!subjects.contains(s)) {
-                    list.add(s);
-                }
-            }
+            subjects = subjectService.getSubjects()
+                    .stream().filter(s -> !userUpdate.getSubjects().contains(s))
+                    .collect(Collectors.toList());
         }
-        model.addAttribute("name", userupdate.getFullName());
-        model.addAttribute("listdk", subjects);
-        model.addAttribute("listSubjects", list);
+        model.addAttribute("name", userUpdate.getFullName());
+        model.addAttribute("listdk", userUpdate.getSubjects());
+        model.addAttribute("listSubjects", subjects);
         model.addAttribute("keyword", keyword);
         return "dkngoaict";
     }
 
-
-    @PostMapping("/registersubjects")
+    @PostMapping("/register-subject")
     public String getSubjectByName(Model model, @Param("keyword") String keyword, Principal principal, HttpServletRequest request, HttpServletResponse response) {
-        User loginedUser = (User) ((Authentication) principal).getPrincipal();
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            System.out.println(Arrays.stream(cookies)
-                    .map(c -> c.getName() + "=" + c.getValue()).collect(Collectors.joining(", ")));
-        }
-        if (loginedUser == null) {
+        User authenticatedUser = (User) ((Authentication) principal).getPrincipal();
+        if (Optional.ofNullable(authenticatedUser).isEmpty()) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null) {
+            if (Optional.ofNullable(auth).isPresent()) {
                 persistentTokenBasedRememberMeServices.loginSuccess(request, response, auth);
+                authenticatedUser = (User) auth.getPrincipal();
             }
-            loginedUser = (User) auth.getPrincipal();
         }
-        String userInfo = WebUtils.toStringUser(loginedUser);
-        Users userupdate = userService.findByUsername(userInfo);
-        Set<Subjects> subject = userupdate.getSubject();
-        String name = principal.getName();
-        List<Subjects> list = new ArrayList<>();
-        List<Subjects> listSubjects;
-        if (keyword != null) {
-            listSubjects = subjectService.getSubjects(keyword);
-            for (Subjects s : listSubjects) {
-                if (!subject.contains(s)) {
-                    list.add(s);
-                }
-            }
+        assert authenticatedUser != null;
+        String username = authenticatedUser.getUsername();
+        com.cloudcomputing.entity.User userUpdate = userService.getUserByUsername(username);
+        List<Subject> subjects;
+        if (Optional.ofNullable(keyword).isPresent()) {
+            subjects = subjectService.getSubjectsByContainKeyword(keyword)
+                    .stream().filter(s -> !userUpdate.getSubjects().contains(s))
+                    .collect(Collectors.toList());
         } else {
-            listSubjects = subjectService.getAll();
-            for (Subjects s : listSubjects) {
-                if (!subject.contains(s)) {
-                    list.add(s);
-                }
-            }
+            subjects = subjectService.getSubjects()
+                    .stream().filter(s -> !userUpdate.getSubjects().contains(s))
+                    .collect(Collectors.toList());
         }
-        Users user = userService.findByUsername(name);
-        model.addAttribute("name", userupdate.getFullName());
-        model.addAttribute("listdk", subject);
-        model.addAttribute("listSubjects", list);
+        model.addAttribute("name", userUpdate.getFullName());
+        model.addAttribute("listdk", userUpdate.getSubjects());
+        model.addAttribute("listSubjects", subjects);
         model.addAttribute("keyword", keyword);
         return "dkngoaict";
     }
 
-
-    @GetMapping("/registersubjects/{id}")
+    @GetMapping("/register-subject/{id}")
     public RedirectView addSubject(Model model, @PathVariable Integer id, Principal principal, HttpServletRequest request, HttpServletResponse response) {
-        Integer Id = id;
-        System.out.println(id);
         Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
+        if (Optional.ofNullable(cookies).isPresent()) {
             System.out.println(Arrays.stream(cookies)
                     .map(c -> c.getName() + "=" + c.getValue()).collect(Collectors.joining(", ")));
         }
-        User loginedUser = (User) ((Authentication) principal).getPrincipal();
-        if (loginedUser == null) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null) {
-                persistentTokenBasedRememberMeServices.loginSuccess(request, response, auth);
+        User authenticatedUser = (User) ((Authentication) principal).getPrincipal();
+        if (Optional.ofNullable(authenticatedUser).isEmpty()) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (Optional.ofNullable(authentication).isPresent()) {
+                persistentTokenBasedRememberMeServices.loginSuccess(request, response, authentication);
             }
-            loginedUser = (User) auth.getPrincipal();
+            assert authentication != null;
+            authenticatedUser = (User) authentication.getPrincipal();
         }
-        String userInfo = WebUtils.toStringUser(loginedUser);
-        Users userupdate = userService.findByUsername(userInfo);
-        Set<Subjects> subject = userupdate.getSubject();
-        subject.add(subjectService.getSubjectsById(id));
-        userupdate.setSubject(subject);
-        userService.save(userupdate);
-        return new RedirectView("/registersubjects");
-
+        com.cloudcomputing.entity.User userUpdate = userService.getUserByUsername(authenticatedUser.getUsername());
+        Set<Subject> subject = userUpdate.getSubjects();
+        subject.add(subjectService.getSubjectById(id));
+        userUpdate.setSubjects(subject);
+        userService.saveOrUpdate(userUpdate);
+        return new RedirectView("/register-subject");
     }
 
-    @GetMapping("registersubjects/delete/{id}")
+    @GetMapping("register-subject/delete/{id}")
     public RedirectView deleteSubject(Model model, @PathVariable Integer id, Principal principal, HttpServletRequest request, HttpServletResponse response) {
-
-        User loginedUser = (User) ((Authentication) principal).getPrincipal();
-        if (loginedUser == null) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null) {
-                persistentTokenBasedRememberMeServices.loginSuccess(request, response, auth);
+        User authenticatedUser = (User) ((Authentication) principal).getPrincipal();
+        if (Optional.ofNullable(authenticatedUser).isEmpty()) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (Optional.ofNullable(authentication).isPresent()) {
+                persistentTokenBasedRememberMeServices.loginSuccess(request, response, authentication);
             }
-            loginedUser = (User) auth.getPrincipal();
+            assert authentication != null;
+            authenticatedUser = (User) authentication.getPrincipal();
         }
-        String userInfo = WebUtils.toStringUser(loginedUser);
-        Users userupdate = userService.findByUsername(userInfo);
-        Set<Subjects> subject = userupdate.getSubject();
-        subject.remove(subjectService.getSubjectsById(id));
-        userupdate.setSubject(subject);
-        userService.save(userupdate);
+        com.cloudcomputing.entity.User userUpdate = userService.getUserByUsername(authenticatedUser.getUsername());
+        Set<Subject> subject = userUpdate.getSubjects();
+        subject.remove(subjectService.getSubjectById(id));
+        userUpdate.setSubjects(subject);
+        userService.saveOrUpdate(userUpdate);
         return new RedirectView("/registersubjects");
     }
 
     @RequestMapping(value = "/admin", method = RequestMethod.GET)
     public String adminPage(Model model, Principal principal, HttpServletRequest request, HttpServletResponse response) {
-
         Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
+        if (Optional.ofNullable(cookies).isPresent()) {
             System.out.println(Arrays.stream(cookies)
                     .map(c -> c.getName() + "=" + c.getValue()).collect(Collectors.joining(", ")));
         }
-
-
-        User loginedUser = (User) ((Authentication) principal).getPrincipal();
-        if (loginedUser == null) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null) {
-                persistentTokenBasedRememberMeServices.loginSuccess(request, response, auth);
+        User authenticatedUser = (User) ((Authentication) principal).getPrincipal();
+        if (Optional.ofNullable(authenticatedUser).isEmpty()) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (Optional.ofNullable(authentication).isPresent()) {
+                persistentTokenBasedRememberMeServices.loginSuccess(request, response, authentication);
             }
-            loginedUser = (User) auth.getPrincipal();
+            assert authentication != null;
+            authenticatedUser = (User) authentication.getPrincipal();
         }
-
-        String userInfo = WebUtils.toString(loginedUser);
-        model.addAttribute("userInfo", userInfo);
-
+        model.addAttribute("username", authenticatedUser.getUsername());
         return "adminPage";
     }
 
@@ -237,26 +195,19 @@ public class HomeController {
             }
         }
         assert authenticatedUser != null;
-        String userInfo = WebUtil.toStringUser(authenticatedUser);
-        com.cloudcomputing.entity.User userupdate = userService.getUserByUsername(userInfo);
-        Set<Subject> subjects = userupdate.getSubjects();
-        String name = principal.getName();
-        com.cloudcomputing.entity.User user = userService.getUserByUsername(name);
-        model.addAttribute("name", userupdate.getFullName());
+        com.cloudcomputing.entity.User userUpdate = userService.getUserByUsername(authenticatedUser.getUsername());
+        Set<Subject> subjects = userUpdate.getSubjects();
+        model.addAttribute("name", userUpdate.getFullName());
         model.addAttribute("listdk", subjects);
         return "resultdk";
-
     }
-
 
     @GetMapping("/403")
     public String accessDenied(Model model, Principal principal) {
         if (Optional.ofNullable(principal).isPresent()) {
             User authenticatedUser = (User) ((Authentication) principal).getPrincipal();
-            String userInfo = WebUtil.toString(authenticatedUser);
-            model.addAttribute("userInfo", userInfo);
-            String message = "Hi " + principal.getName() + "<br> You do not have permission to access this page!";
-            model.addAttribute("message", message);
+            model.addAttribute("username", authenticatedUser.getUsername());
+            model.addAttribute("message", "Hi " + principal.getName() + "<br> You do not have permission to access this page!");
         }
         return "403Page";
     }
