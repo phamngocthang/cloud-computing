@@ -15,6 +15,11 @@ services:
       REDIS_HOST: redis
     networks:
       - mynet
+    deploy:
+      labels:
+        swarm.autoscaler: 'true'
+        swarm.autoscaler.maximum: '6'
+        swarm.autoscaler.minimum: '3'
   db:
     image: hungfq/maria:1.2.1
     deploy:
@@ -25,6 +30,12 @@ services:
       DB_SERVICE_NAME: dkmh_db
     networks:
       - mynet
+
+    deploy:
+      labels:
+        swarm.autoscaler: 'true'
+        swarm.autoscaler.maximum: '6'
+        swarm.autoscaler.minimum: '1'
   redis:
     image: hungfq/redis:1.0
     deploy:
