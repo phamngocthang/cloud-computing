@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   app:
-    image: hungfq/dkmh:1.5
+    image: pntnoah1/dkmh:1.5
     deploy:
         placement:
           constraints: [node.role == worker]
@@ -21,7 +21,7 @@ services:
         swarm.autoscaler.maximum: '6'
         swarm.autoscaler.minimum: '3'
   db:
-    image: hungfq/maria:1.2.1
+    image: pntnoah1/maria:1.2.1
     deploy:
         placement:
           constraints: [node.role == worker]
@@ -37,7 +37,7 @@ services:
         swarm.autoscaler.maximum: '6'
         swarm.autoscaler.minimum: '1'
   redis:
-    image: hungfq/redis:1.0
+    image: pntnoah1/redis:1.0
     deploy:
         placement:
           constraints: [node.role == manager]
