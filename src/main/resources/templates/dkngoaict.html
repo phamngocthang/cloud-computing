@@ -85,7 +85,7 @@
                                 <tr>
 
                                     <td align="center">
-                                        <form th:action="@{/registersubjects}" class="form-inline m-3" method="post" >
+                                        <form th:action="@{/register-subject}" class="form-inline m-3" method="post" >
                                             <b>Nhập mã môn học : </b>
                                             <input type="text" title="Nhập mã môn học để tìm kiếm ..."
                                                    style="width:200px" placeholder="Nhập mã môn học để tìm kiếm ..."
@@ -124,7 +124,7 @@
                                                     <td class="col4">[[${subject.categorySubject}]]</td>
                                                     <td class="col4">[[${subject.totalCredits}]]</td>
                                                     <td class="col4">
-                                                        <form method="GET" th:action="@{'/registersubjects/'+${subject.id}}">
+                                                        <form method="GET" th:action="@{'/register-subject/'+${subject.id}}">
                                                             <button type="submit" >Thêm</button>
                                                         </form>
                                                     </td>
@@ -161,7 +161,7 @@
                                             <td class="col4">[[${subject.categorySubject}]]</td>
                                             <td class="col4">[[${subject.totalCredits}]]</td>
                                             <td class="col4">
-                                                <form method="get" th:action="@{'/registersubjects/delete/'+${subject.id}}">
+                                                <form method="get" th:action="@{'/register-subject/delete/'+${subject.id}}">
                                                     <button type="submit" >Xóa</button>
                                                 </form>
                                             </td>
