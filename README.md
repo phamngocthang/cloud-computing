@@ -47,7 +47,7 @@ Below are the application packaging details.
 
 - **Use the docker file contained in the repo (`Dockerfile` ) to package it into an image**
 
-> docker build . -t hungfq/dkmh:1.5
+> docker build . -t pntnoah1/dkmh:1.5
 
 - **Create file docker compose dkmh.yml . This file is located in the repo. In this file define 3 services: app, db, redis.**
 
