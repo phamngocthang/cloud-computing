@@ -92,3 +92,4 @@ deploy:
 5. [google/cadvisor - Docker Image | Docker Hub](https://hub.docker.com/r/google/cadvisor/)
 6. [Redis - Official Image | Docker Hub](https://hub.docker.com/_/redis)
 7. [Docker visualizer](https://github.com/dockersamples/docker-swarm-visualizer)
+8. [Scaling & Load Balancing] (https://viblo.asia/p/scaling-load-balancing-ung-dung-cua-ban-voi-docker-swarm-Do754Ge4lM6)
