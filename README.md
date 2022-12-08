@@ -27,7 +27,7 @@ In this article, the system uses applications to monitor the system:
   Here, Prometheus will monitor the updated parameters from the containers through cAdvisor, from that data will check the performance of the cpu, then set up the rules to scale up and scale down.
   The configurations are packaged into the docker-swarm-autoscaler image. The configuration is located in the docker-swarm-autoscaler directory.
 - **The packaging of the sentence uses the syntax:**
-> docker build . -t lequocbao29072001/autoscaler:1.0
+> docker build . -t pntnoah1/autoscaler:1.0
 - **Create a file prometheus.yml containing the configuration information of prometheus (the file is contained in this repository)**
 - **Create file docker-swarm-autoscaler.yml containing configuration applications to deploy system monitoring (files are contained in this repository)**
 - **Execute deploy docker stack, use following command**:
@@ -71,16 +71,6 @@ Below are the application packaging details.
 deploy:
   labels:
     - "swarm.autoscaler=true"
-```
-> This is best combined with resource constraints. This is also the implementation key.
-```
-deploy:
-  resources:
-    reservations:
-      cpus: '0.25'
-      memory: 512M
-    limits:
-      cpus: '0.50'
 ```
 
 - **Execute deploy docker stack, use following command**:
